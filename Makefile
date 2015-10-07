@@ -1,31 +1,50 @@
 #
 # Binaries
-# 
+#
 
 nodemon = ./node_modules/.bin/nodemon --harmony --quiet
+BIN := ./node_modules/.bin
+BROWSERIFY := $(BIN)/browserify
+DUO := $(BIN)/duo
 
 #
 # Default
-# 
+#
 
 default: run
 
-# Remove non-checked-in dependencies
+#
+# Build.
+#
 
-clean: 
+build: node_modules
+				@$(BROWSERIFY) -t babelify client/app/index.js > client/build.js
+				@$(DUO) client/app/index.css --stdout --quiet --use duo-myth > client/build.css
+
+#
+# Remove non-checked-in dependencies
+#
+
+clean:
 	@rm -rf node_modules components
 
+#
 # Run the server in debug mode
+#
 
 debug: node_modules
 	@node debug --harmony ./server.js --development
 
+#
 # Run the server
+#
 
-run: node_modules
+run: build
 	@node --harmony ./server.js
 
+#
 # Run the server for development via nodemon
+#
 
 serve: node_modules
 	@$(nodemon) --watch serve --watch serve ./server.js --development
@@ -34,7 +53,7 @@ serve: node_modules
 
 #
 # Targets
-# 
+#
 
 node_modules: package.json
 	@npm install
@@ -42,8 +61,9 @@ node_modules: package.json
 
 #
 # Phonies
-# 
+#
 
+.PHONY: build
 .PHONY: clean
 .PHONY: debug
 .PHONY: run
